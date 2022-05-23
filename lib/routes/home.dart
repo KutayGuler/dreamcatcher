@@ -1,6 +1,7 @@
-import 'package:dreamcatcher/components/dream_card.dart';
+import 'package:dreamcatcher/routes/community.dart';
+import 'package:dreamcatcher/routes/dreams_list.dart';
+import 'package:dreamcatcher/routes/graphs.dart';
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -10,99 +11,60 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  bool clickedSearchBar = false;
+  int bottomSelectedIndex = 0;
+
+  List<BottomNavigationBarItem> buildBottomNavBarItems() {
+    return [
+      BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.bar_chart),
+        label: 'Graphs',
+      ),
+      BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community')
+    ];
+  }
+
+  PageController pageController = PageController(
+    initialPage: 0,
+    keepPage: true,
+  );
+
+  void pageChanged(int index) {
+    setState(() {
+      bottomSelectedIndex = index;
+    });
+  }
+
+  void bottomTapped(int index) {
+    setState(() {
+      bottomSelectedIndex = index;
+      pageController.animateToPage(index,
+          duration: Duration(milliseconds: 500), curve: Curves.ease);
+    });
+  }
+
+  Widget buildPageView() {
+    return PageView(
+      controller: pageController,
+      onPageChanged: (index) {
+        pageChanged(index);
+      },
+      children: const <Widget>[
+        DreamsList(),
+        Graphs(),
+        Community(),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.only(top: 5.h),
-        child: SizedBox(
-          width: 100.w,
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(left: 10.w, right: 10.w),
-                    width: 100.w,
-                    child: Row(
-                      children: [
-                        // TODO: Fade search bar
-                        Expanded(
-                          child: clickedSearchBar
-                              ? TextFormField()
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Good morning,",
-                                      style: TextStyle(fontSize: 16.sp),
-                                    ),
-                                    Text(
-                                      "Selen",
-                                      style: TextStyle(fontSize: 16.sp),
-                                    )
-                                  ],
-                                ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              clickedSearchBar = true;
-                            });
-                          },
-                          child: Icon(
-                            Icons.search,
-                            size: 10.w,
-                          ),
-                        ),
-                        Icon(
-                          Icons.person,
-                          size: 10.w,
-                        )
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    width: 80.w,
-                    height: 88.h,
-                    child: ListView.separated(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: 2,
-                      separatorBuilder: (BuildContext context, int index) {
-                        return SizedBox(
-                          height: 5.h,
-                        );
-                      },
-                      itemBuilder: (BuildContext context, int index) {
-                        return const DreamCard(
-                            title: "Happy Mouse", date: "18.02.2022");
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Positioned(
-                  bottom: 4.h,
-                  right: 5.w,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, "create_dream");
-                    },
-                    elevation: 0,
-                    shape: CircleBorder(
-                        side: BorderSide(width: 0.4.w, color: Colors.black)),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: Icon(
-                      Icons.add,
-                      color: Colors.black,
-                    ),
-                  )),
-            ],
-          ),
-        ),
+      body: buildPageView(),
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: (i) => bottomTapped(i),
+        currentIndex: bottomSelectedIndex,
+        items: buildBottomNavBarItems(),
       ),
     );
   }

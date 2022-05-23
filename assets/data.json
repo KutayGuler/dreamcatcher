@@ -1,0 +1,33 @@
+{
+  "dreams": {
+    "uid1": {
+      "id": "uid1",
+      "title": "Karadeniz anusi",
+      "date": "2022-02-16",
+      "themes": [],
+      "places": ["primary school"],
+      "people": ["patrick", "sister"],
+      "description": "I was in egypt with my mom and Tom and all of a sudden..."
+    },
+    "uid2": {
+      "id": "uid2",
+      "title": "Katliam",
+      "date": "2022-02-17",
+      "themes": [],
+      "places": ["primary school"],
+      "people": ["mom", "tom"],
+      "description": "I was in egypt with my mom and Tom and all of a sudden..."
+    },
+    "uid3": {
+      "id": "uid3",
+      "title": "Alien in the pyramids",
+      "date": "2022-02-18",
+      "themes": [],
+      "places": ["primary school"],
+      "people": ["sister", "uncle", "patrick"],
+      "description": "I was in egypt with my mom and Tom and all of a sudden..."
+    }
+  },
+  "places": ["home", "pyramids"],
+  "people": ["mom", "Tom", "sister", "uncle", "abdulrezzak", "ahmet", "mehmet", "hasan", "hüseyin", "xd"]
+}

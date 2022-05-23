@@ -36,6 +36,11 @@ dependencies:
   cupertino_icons: ^1.0.2
   sizer: ^2.0.15
 
+  provider: ^6.0.2
+  mobx: ^2.0.7
+  flutter_mobx: ^2.0.5
+  get_it: ^7.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -46,6 +51,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
+
+  build_runner: ^2.1.10
+  mobx_codegen: ^2.0.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -74,6 +82,9 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  assets:
+    - assets/data.json
+
   fonts:
     - family: Comfortaa
       fonts:
