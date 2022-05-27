@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:sizer/sizer.dart';
+import '../observables.dart';
+import 'package:uuid/uuid.dart';
 
 class CreateDream extends StatefulWidget {
   const CreateDream({Key? key}) : super(key: key);
@@ -24,6 +24,27 @@ class _CreateDreamState extends State<CreateDream> {
   late List<bool> isSelectedPeople;
   late Map<String, dynamic> data;
 
+  DateTime selectedDate = DateTime.now();
+
+  Map<String, dynamic> dream = {
+    "id": "",
+    "date": "",
+    "title": "",
+    "themes": [],
+    "places": [],
+    "people": [],
+    "description": "",
+  };
+
+  void saveDream(BuildContext context) {
+    g<S>().addDream(dream);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Saved ' + dream["title"]),
+      ),
+    );
+  }
+
   static const List<IconData> icons = [
     Icons.sentiment_satisfied_outlined,
     Icons.sentiment_dissatisfied_outlined,
@@ -33,37 +54,23 @@ class _CreateDreamState extends State<CreateDream> {
     Icons.cake,
   ];
 
-  // TODO: Add new people/places to data.json with input
-  // TODO: Add new dream to data.json on save
-  // TODO: Save date as string
-  // TODO: Change input to modal
-  // TODO: Form validation
-  // TODO: Add snackbar on save success
+  // TODO: Ask if dream logs are going to be editable
 
-  DateTime selectedDate = DateTime.now();
+  var uuid = const Uuid();
 
-  bool addNewPlace = false;
-  bool addNewPerson = false;
-  bool saved = false;
-  bool dataLoaded = false;
-
-  void readJson() async {
-    print('called');
-    final String response = await rootBundle.loadString('assets/data.json');
-    final jsonData = await json.decode(response);
-
+  void initialize() {
     setState(() {
-      data = jsonData;
+      dream["date"] = selectedDate.toString().split(" ")[0];
+      data = g<S>().allData;
       isSelectedPlaces = List.generate(data['places'].length, (index) => false);
       isSelectedPeople = List.generate(data['people'].length, (index) => false);
-      dataLoaded = true;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    readJson();
+    initialize();
   }
 
   @override
@@ -71,13 +78,29 @@ class _CreateDreamState extends State<CreateDream> {
     Color primaryColor = Theme.of(context).primaryColor;
     Color primaryColorDark = Theme.of(context).primaryColorDark;
 
-    void popAlert() {
+    double _borderWidth = 0.5.w;
+    double _width = 80.w;
+
+    void popInput(String label) {
+      var _inputValue = "";
+
       showDialog(
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('Dream not saved'),
-              content: const Text('Changes will be discarded'),
+              title:
+                  Text("Add new " + (label == "places" ? "place" : "person")),
+              content: TextField(
+                autofocus: true,
+                onChanged: (String val) {
+                  _inputValue = val;
+                },
+                maxLength: 32,
+                decoration: const InputDecoration(
+                  counterText: "",
+                  border: OutlineInputBorder(),
+                ),
+              ),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -85,10 +108,16 @@ class _CreateDreamState extends State<CreateDream> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    g<S>().addToData("places", _inputValue);
+                    setState(() {
+                      label == "places"
+                          ? isSelectedPlaces.add(false)
+                          : isSelectedPeople.add(false);
+                      // data[label].add(_inputValue);
+                    });
                     Navigator.pop(context);
                   },
-                  child: const Text('OK'),
+                  child: const Text('DONE'),
                 ),
               ],
             );
@@ -97,9 +126,12 @@ class _CreateDreamState extends State<CreateDream> {
 
     return WillPopScope(
       onWillPop: () async {
-        if (saved) return true;
-        popAlert();
-        return false;
+        if (dream["title"] != "" &&
+            dream["description"] != "" &&
+            dream["places"].isNotEmpty) {
+          saveDream(context);
+        }
+        return true;
       },
       child: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -114,29 +146,8 @@ class _CreateDreamState extends State<CreateDream> {
                   crossAxisAlignment: WrapCrossAlignment.start,
                   direction: Axis.vertical,
                   children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.chevron_left,
-                            size: 5.w,
-                          ),
-                          onPressed: () {
-                            if (saved) Navigator.pop(context);
-                            popAlert();
-                          },
-                        ),
-                        SizedBox(
-                          width: 70.w,
-                          child: const TextField(
-                            decoration:
-                                InputDecoration(hintText: "Untitled Dream"),
-                          ),
-                        )
-                      ],
-                    ),
                     SizedBox(
-                      width: 84.w,
+                      width: _width,
                       child: Row(
                         children: [
                           Expanded(
@@ -163,15 +174,41 @@ class _CreateDreamState extends State<CreateDream> {
                               lastDate: DateTime(2023),
                             ).then((currentDate) {
                               if (currentDate is! DateTime) return;
-                              setState(() => selectedDate = currentDate);
+                              setState(() {
+                                selectedDate = currentDate;
+                                dream["date"] =
+                                    currentDate.toString().split(" ")[0];
+                              });
                             }),
                           ),
                         ],
                       ),
                     ),
+                    const InputLabel(label: "title"),
+                    SizedBox(
+                      width: _width,
+                      child: TextField(
+                        onChanged: (String val) {
+                          setState(() => dream["title"] = val);
+                        },
+                        maxLength: 24,
+                        cursorColor: Colors.black,
+                        decoration: InputDecoration(
+                          counterText: "",
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.black, width: _borderWidth),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.black, width: _borderWidth),
+                          ),
+                        ),
+                      ),
+                    ),
                     const InputLabel(label: "theme"),
                     SizedBox(
-                      width: 84.w,
+                      width: _width,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: List.generate(isSelectedEmotions.length, (i) {
@@ -182,9 +219,9 @@ class _CreateDreamState extends State<CreateDream> {
                               color: isSelectedEmotions[i]
                                   ? primaryColor
                                   : Colors.white,
-                              border:
-                                  Border.all(color: Colors.black, width: 0.5.w),
-                              borderRadius: BorderRadius.circular(0.5.w),
+                              border: Border.all(
+                                  color: Colors.black, width: _borderWidth),
+                              borderRadius: BorderRadius.circular(_borderWidth),
                             ),
                             child: IconButton(
                               splashColor: Colors.transparent,
@@ -201,120 +238,115 @@ class _CreateDreamState extends State<CreateDream> {
                         }),
                       ),
                     ),
-                    for (int i = 0; i < 2; i++)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            i == 0 ? "places" : "people",
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                          SizedBox(
-                            height: 2.h,
-                          ),
-                          dataLoaded
-                              ? AnimatedCrossFade(
-                                  firstChild: SizedBox(
-                                    width: 84.w,
-                                    child: Wrap(
-                                      spacing: 2.w,
-                                      children: List.generate(
-                                          i == 0
-                                              ? data['places'].length + 1
-                                              : data['people'].length + 1,
-                                          (int index) {
-                                        if ((i == 0 &&
-                                                index ==
-                                                    data['places'].length) ||
-                                            index == data['people'].length) {
-                                          return IconButton(
-                                            icon: Icon(i == 0
-                                                ? Icons.add_location_alt
-                                                : Icons.person_add),
-                                            onPressed: () {},
-                                          );
-                                        }
+                    ...List.generate(2, (int i) {
+                      String _label = "places";
+                      List _isSelected = isSelectedPlaces;
+                      IconData _iconData = Icons.add_location_alt;
 
-                                        var arr = i == 0
-                                            ? isSelectedPlaces
-                                            : isSelectedPeople;
+                      if (i == 1) {
+                        _label = "people";
+                        _isSelected = isSelectedPeople;
+                        _iconData = Icons.person_add;
+                      }
 
-                                        return TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              arr[index] = !arr[index];
-                                            });
-                                          },
-                                          child: Text(
-                                            i == 0
-                                                ? data['places'][index]
-                                                : data['people'][index],
-                                            style: const TextStyle(
-                                                color: Colors.black),
-                                          ),
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: arr[index]
-                                                ? primaryColor
-                                                : Colors.white,
-                                            side: BorderSide(
-                                                width: 0.5.w,
-                                                color: Colors.black),
-                                          ),
+                      return Observer(builder: (context) {
+                        var _arr = g<S>().allData[_label];
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _label,
+                              style: TextStyle(fontSize: 14.sp),
+                            ),
+                            SizedBox(height: 2.h),
+                            // TODO: Add show all button to increase height, make two different variables for height
+                            AnimatedContainer(
+                              height: 8.h,
+                              duration: Duration(milliseconds: 200),
+                              child: ClipRect(
+                                child: SizedBox(
+                                  width: _width,
+                                  child: Wrap(
+                                    spacing: 2.w,
+                                    // TODO: Could make list elements into a widget that scales on mount
+                                    children: List.generate(_arr.length + 1,
+                                        (int index) {
+                                      if (index == _arr.length) {
+                                        return IconButton(
+                                          icon: Icon(_iconData),
+                                          onPressed: () => popInput(_label),
                                         );
-                                      }),
-                                    ),
-                                  ),
-                                  secondChild: SizedBox(
-                                    width: 70.w,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 4.h),
-                                      child: TextField(
-                                        onSubmitted: (String val) {},
-                                        maxLength: 32,
-                                        decoration: InputDecoration(
-                                          hintText: i == 0
-                                              ? "Enter a new place"
-                                              : "Enter a new person",
-                                          border: const OutlineInputBorder(),
-                                          suffixIcon: IconButton(
-                                            icon: const Icon(Icons.cancel),
-                                            onPressed: () {
-                                              setState(() {
-                                                i == 0
-                                                    ? addNewPlace = false
-                                                    : addNewPerson = false;
-                                              });
-                                            },
-                                          ),
+                                      }
+
+                                      return TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isSelected[index] =
+                                                !_isSelected[index];
+                                            for (var i = 0;
+                                                i < _isSelected.length;
+                                                i++) {
+                                              if (_isSelected[i]) {
+                                                dream[_label].add(_arr[i]);
+                                              }
+                                            }
+                                          });
+                                        },
+                                        child: Text(
+                                          _arr[index],
+                                          style: const TextStyle(
+                                              color: Colors.black),
                                         ),
-                                      ),
-                                    ),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: _isSelected[index]
+                                              ? primaryColor
+                                              : Colors.white,
+                                          side: BorderSide(
+                                              width: _borderWidth,
+                                              color: Colors.black),
+                                        ),
+                                      );
+                                    }),
                                   ),
-                                  crossFadeState: (i == 0 && addNewPlace) ||
-                                          (i == 1 && addNewPerson)
-                                      ? CrossFadeState.showSecond
-                                      : CrossFadeState.showFirst,
-                                  duration: const Duration(milliseconds: 200),
-                                )
-                              : Container(),
-                        ],
-                      ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      });
+                    }),
                     const InputLabel(label: "description"),
                     SizedBox(
                       height: 30.h,
-                      width: 84.w,
+                      width: _width,
                       child: TextFormField(
-                        decoration:
-                            const InputDecoration(hintText: "I was ..."),
+                        onChanged: (String val) {
+                          setState(() {
+                            dream["description"] = val;
+                          });
+                        },
+                        textAlignVertical: TextAlignVertical.top,
+                        decoration: InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.black, width: _borderWidth),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.black, width: _borderWidth),
+                          ),
+                        ),
                         maxLines: null, // required for expands attribute
                         expands: true,
                         maxLength: 1000,
+                        cursorColor: Colors.black,
                       ),
                     ),
                     const InputLabel(label: "drawings"),
                     SizedBox(
                       height: 30.h,
-                      width: 84.w,
+                      width: _width,
                       child: Center(
                         child: IconButton(
                           iconSize: 20.h,
@@ -325,13 +357,16 @@ class _CreateDreamState extends State<CreateDream> {
                     ),
                     Center(
                       child: OutlinedButton(
-                        onPressed: () => saved = true,
+                        onPressed: () {
+                          saveDream(context);
+                        },
                         child: const Text(
                           "save",
                           style: TextStyle(color: Colors.white),
                         ),
                         style: ButtonStyle(
-                          fixedSize: MaterialStateProperty.all(Size(84.w, 5.h)),
+                          fixedSize:
+                              MaterialStateProperty.all(Size(_width, 5.h)),
                           backgroundColor: MaterialStateProperty.all(
                               Theme.of(context).primaryColorDark),
                         ),

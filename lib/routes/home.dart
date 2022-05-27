@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:dreamcatcher/routes/community.dart';
 import 'package:dreamcatcher/routes/dreams_list.dart';
 import 'package:dreamcatcher/routes/graphs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../observables.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);

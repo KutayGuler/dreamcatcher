@@ -1,14 +1,26 @@
-import 'package:dreamcatcher/routes/create_dream.dart';
-import 'package:dreamcatcher/routes/dream_details.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 import 'observables.dart';
-import 'routes/home.dart';
-import 'routes/create_dream.dart';
+
+// ROUTES
+import 'package:dreamcatcher/routes/create_dream.dart';
+import 'package:dreamcatcher/routes/dream_details.dart';
+import 'package:dreamcatcher/routes/home.dart';
+import 'package:dreamcatcher/routes/profile.dart';
+
+void readJson() async {
+  final String response = await rootBundle.loadString('assets/data.json');
+  final jsonData = await json.decode(response);
+  g<S>().setAll(jsonData);
+}
 
 void main() {
   runApp(const MyApp());
   setup();
+  readJson();
 }
 
 class MyApp extends StatelessWidget {
@@ -29,6 +41,7 @@ class MyApp extends StatelessWidget {
           routes: {
             'create_dream': (context) => const CreateDream(),
             'dream_details': (context) => const DreamDetails(),
+            'profile': (context) => const Profile()
           });
     });
   }

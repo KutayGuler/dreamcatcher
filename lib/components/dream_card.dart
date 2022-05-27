@@ -54,33 +54,35 @@ class DreamCard extends StatelessWidget {
             ),
             Text(
               formattedDate,
-              style: TextStyle(fontSize: 18.sp),
+              style: TextStyle(fontSize: 14.sp),
             ),
             SizedBox(
               height: 1.h,
             ),
-            Wrap(
-              direction: Axis.vertical,
-              children: List.generate(icons.length, (int i) {
-                var arr = i == 0 ? places : people;
+            ...List.generate(icons.length, (int i) {
+              var arr = i == 0 ? places : people;
+              if (arr.isEmpty) return Container();
+              // TODO: Set max display length for these things (Google)
 
-                return Padding(
-                  padding: EdgeInsets.only(top: 1.w),
-                  child: Row(
-                    children: [
-                      Icon(
-                        icons[i],
-                        size: 5.w,
-                      ),
-                      for (var j = 0; j < arr.length; j++)
-                        Text(" " +
+              return Padding(
+                padding: EdgeInsets.only(top: 1.w),
+                child: Row(
+                  children: [
+                    Icon(
+                      icons[i],
+                      size: 5.w,
+                    ),
+                    for (var j = 0; j < arr.length; j++)
+                      Text(
+                        " " +
                             arr[j].toString() +
-                            (j + 1 == arr.length ? "" : ","))
-                    ],
-                  ),
-                );
-              }),
-            ),
+                            (j + 1 == arr.length ? "" : ","),
+                        style: TextStyle(fontSize: 14.sp),
+                      )
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),
