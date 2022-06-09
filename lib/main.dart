@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 import 'observables.dart';
 
@@ -11,16 +8,9 @@ import 'package:dreamcatcher/routes/dream_details.dart';
 import 'package:dreamcatcher/routes/home.dart';
 import 'package:dreamcatcher/routes/profile.dart';
 
-void readJson() async {
-  final String response = await rootBundle.loadString('assets/data.json');
-  final jsonData = await json.decode(response);
-  g<S>().setAll(jsonData);
-}
-
 void main() {
   runApp(const MyApp());
   setup();
-  readJson();
 }
 
 class MyApp extends StatelessWidget {

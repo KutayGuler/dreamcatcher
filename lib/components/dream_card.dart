@@ -60,9 +60,12 @@ class DreamCard extends StatelessWidget {
               height: 1.h,
             ),
             ...List.generate(icons.length, (int i) {
-              var arr = i == 0 ? places : people;
+              var arr = i == 0 ? [...places] : [...people];
               if (arr.isEmpty) return Container();
-              // TODO: Set max display length for these things (Google)
+              var copyArr = [...arr];
+              while (copyArr.reduce((sum, str) => sum + str).length > 18) {
+                copyArr.removeLast();
+              }
 
               return Padding(
                 padding: EdgeInsets.only(top: 1.w),
@@ -72,11 +75,15 @@ class DreamCard extends StatelessWidget {
                       icons[i],
                       size: 5.w,
                     ),
-                    for (var j = 0; j < arr.length; j++)
+                    for (var j = 0; j < copyArr.length; j++)
                       Text(
                         " " +
-                            arr[j].toString() +
-                            (j + 1 == arr.length ? "" : ","),
+                            copyArr[j].toString() +
+                            (j + 1 == copyArr.length
+                                ? arr.length > copyArr.length
+                                    ? " ..."
+                                    : ""
+                                : ","),
                         style: TextStyle(fontSize: 14.sp),
                       )
                   ],

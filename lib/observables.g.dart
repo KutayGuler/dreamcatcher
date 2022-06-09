@@ -57,6 +57,22 @@ mixin _$S on DreamStateBase, Store {
     });
   }
 
+  late final _$readJsonAsyncAction =
+      AsyncAction('DreamStateBase.readJson', context: context);
+
+  @override
+  Future<dynamic> readJson() {
+    return _$readJsonAsyncAction.run(() => super.readJson());
+  }
+
+  late final _$saveFileAsyncAction =
+      AsyncAction('DreamStateBase.saveFile', context: context);
+
+  @override
+  Future<File> saveFile() {
+    return _$saveFileAsyncAction.run(() => super.saveFile());
+  }
+
   late final _$DreamStateBaseActionController =
       ActionController(name: 'DreamStateBase', context: context);
 
@@ -94,11 +110,11 @@ mixin _$S on DreamStateBase, Store {
   }
 
   @override
-  dynamic addDream(dynamic dream) {
+  dynamic addDream(dynamic id, dynamic dream) {
     final _$actionInfo = _$DreamStateBaseActionController.startAction(
         name: 'DreamStateBase.addDream');
     try {
-      return super.addDream(dream);
+      return super.addDream(id, dream);
     } finally {
       _$DreamStateBaseActionController.endAction(_$actionInfo);
     }

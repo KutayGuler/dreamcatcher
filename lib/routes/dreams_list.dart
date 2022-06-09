@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:dreamcatcher/components/dream_card.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
@@ -15,9 +16,12 @@ class DreamsList extends StatefulWidget {
 class _DreamsListState extends State<DreamsList> {
   bool clickedSearchBar = false;
   String _titleFilter = "";
+  String _sortDate = "Newest";
   Duration searchFadeDuration = const Duration(milliseconds: 200);
 
-  // TODO: (later) Skeleton loading
+  void switchDateSort() {
+    setState(() => _sortDate = _sortDate == "Newest" ? "Oldest" : "Newest");
+  }
 
   @override
   void initState() {
@@ -129,15 +133,35 @@ class _DreamsListState extends State<DreamsList> {
                                                     ),
                                                   ),
                                                 ),
-                                                AnimatedOpacity(
-                                                  opacity: _titleFilter == ""
-                                                      ? 0
-                                                      : 1,
-                                                  duration: const Duration(
-                                                      milliseconds: 500),
-                                                  curve: Curves.easeOut,
-                                                  child: Flexible(
-                                                    flex: 1,
+                                                Flexible(
+                                                  flex: 1,
+                                                  child: RichText(
+                                                    text: TextSpan(
+                                                        children: [
+                                                          const WidgetSpan(
+                                                              child: Icon(Icons
+                                                                  .date_range)),
+                                                          TextSpan(
+                                                              text: _sortDate,
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .black))
+                                                        ],
+                                                        recognizer:
+                                                            TapGestureRecognizer()
+                                                              ..onTap =
+                                                                  switchDateSort),
+                                                  ),
+                                                ),
+                                                Flexible(
+                                                  flex: 1,
+                                                  child: AnimatedOpacity(
+                                                    opacity: _titleFilter == ""
+                                                        ? 0
+                                                        : 1,
+                                                    duration: const Duration(
+                                                        milliseconds: 500),
+                                                    curve: Curves.easeOut,
                                                     child: Padding(
                                                       padding: EdgeInsets.only(
                                                           top: 2.w),
